@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Форма и таблица</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Таблица</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Email</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <h4>Форма</h4>
+        <form id="myForm">
+          <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" class="form-control" id="name" name="name">
+          </div>
+          <div class="form-group">
+            <label for="surname">Фамилия</label>
+            <input type="text" class="form-control" id="surname" name="surname">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email">
+          </div>
+          <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea class="form-control" id="description" name="description"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Записать</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('myForm');
+      const tableBody = document.getElementById('tableBody');
+
+      // Загрузка данных из бэкенда при загрузке страницы
+      fetchStudents();
+
+      // Отправка данных на бэкенд при отправке формы
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const studentData = {
+          name: formData.get('name'),
+          surname: formData.get('surname'),
+          email: formData.get('email'),
+          description: formData.get('description')
+        };
+        createStudent(studentData);
+      });
+
+      function fetchStudents() {
+        fetch('/student')
+          .then(response => response.json())
+          .then(data => {
+            renderStudentsTable(data);
+          })
+          .catch(error => {
+            console.error('Ошибка получения данных:', error);
+          });
+      }
+
+      function createStudent(studentData) {
+        fetch('/student', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(studentData)
+        })
+          .then(response => response.json())
+          .then(() => {
+            fetchStudents();
+          })
+          .catch(error => {
+            console.error('Ошибка создания студента:', error);
+          });
+      }
+
+      function renderStudentsTable(students) {
+        tableBody.innerHTML = '';
+        students.forEach(student => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${student.name}</td>
+            <td>${student.surname}</td>
+            <td>${student.email}</td>
+            <td>${student.description}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
